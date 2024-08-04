@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تبلیغات - Lilnk</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            font-family: 'Vazir', sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            direction: rtl;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        h1 {
+            color: #000000;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .timer-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        svg circle {
+            fill: none;
+            stroke-width: 6px;
+            stroke-linecap: round;
+        }
+
+        svg circle.bg {
+            stroke: #d0d0d0;
+        }
+
+        svg circle.meter {
+            stroke: #000000;
+            stroke-dasharray: 251.2; /* 2 * π * r */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .advertisement {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            height: 100px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .timer-container {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 15px;
+            }
+
+            .timer-text {
+                font-size: 18px;
+            }
+
+            .advertisement {
+                height: 80px;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let countdown = 15;
+            let countdownInterval;
+            const timerElement = document.getElementById('timer');
+            const meterCircle = document.querySelector('svg circle.meter');
+            let redirectTriggered = false;
+
+            function startCountdown() {
+                countdownInterval = setInterval(function () {
+                    if (document.visibilityState === 'visible') {
+                        countdown--;
+                        const progress = (countdown / 15) * 251.2; // 2 * π * r
+                        meterCircle.style.strokeDashoffset = 251.2 - progress; // Move from end to start
+                        timerElement.textContent = countdown;
+
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            redirectTriggered = true;
+                            window.location.href = "{{original_url}}";
+                        }
+                    }
+                }, 1000);
+            }
+
+            function handleVisibilityChange() {
+                if (document.visibilityState === 'hidden') {
+                    clearInterval(countdownInterval);
+                } else {
+                    startCountdown();
+                }
+            }
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            startCountdown();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>تبلیغات - Lilnk</h1>
+        <div class="advertisement">فضای تبلیغاتی</div>
+        <div class="advertisement">فضای تبلیغاتی</div>
+        <div class="timer-container">
+            <svg viewBox="0 0 100 100">
+                <circle class="bg" cx="50" cy="50" r="40" />
+                <circle class="meter" cx="50" cy="50" r="40" />
+            </svg>
+            <div id="timer" class="timer-text">15</div>
+        </div>
+        <p>به زودی هدایت می‌شوید...</p>
+        <div class="advertisement">فضای تبلیغاتی</div>
+        <div class="advertisement">فضای تبلیغاتی</div>
+    </div>
+</body>
+</html>
