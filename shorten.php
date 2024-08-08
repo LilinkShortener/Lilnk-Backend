@@ -6,6 +6,7 @@ include 'config.php';
  * Method: POST
  * Request Body:
  * {
+ *     "api_key": "your_secret_api_key_here",
  *     "user_id": 12345,
  *     "original_link": "http://example.com",
  *     "short_link": "customname",  // یا "" برای نام رندوم
@@ -15,15 +16,21 @@ include 'config.php';
  * Success: {"success": true, "short_link": "abcd"}
  * Error: {"error": "Short link already exists"}
  */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
 
+$data = json_decode(file_get_contents('php://input'), true);
+
+// Check API Key
+if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
+    echo json_encode(['error' => 'Invalid API Key']);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $data['user_id'];
     $originalLink = $data['original_link'];
     $shortLink = $data['short_link'] ? $data['short_link'] : bin2hex(random_bytes(4));
     $withAds = isset($data['with_ads']) ? $data['with_ads'] : true;
 
-    // Check if short link already exists
     $stmt = $pdo->prepare("SELECT id FROM links WHERE short_url = ?");
     $stmt->execute([$shortLink]);
 

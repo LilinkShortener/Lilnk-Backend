@@ -6,16 +6,24 @@ include 'config.php';
  * Method: POST
  * Request Body:
  * {
- *     "email": "user@example.com",
- *     "password": "securepassword"
+ *     "api_key": "your_secret_api_key_here",
+ *     "email": "example@example.com",
+ *     "password": "password123"
  * }
  * Response:
- * Success: {"success": true, "id": 12345}
+ * Success: {"success": true, "id": 1}
  * Error: {"error": "User already exists"}
  */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
 
+$data = json_decode(file_get_contents('php://input'), true);
+
+// Check API Key
+if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
+    echo json_encode(['error' => 'Invalid API Key']);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $data['email'];
     $password = password_hash($data['password'], PASSWORD_BCRYPT);
 

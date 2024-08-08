@@ -6,6 +6,7 @@ include 'config.php';
  * Method: POST
  * Request Body:
  * {
+ *     "api_key": "your_secret_api_key_here",
  *     "user_id": 1
  * }
  * Response:
@@ -26,12 +27,17 @@ include 'config.php';
  * Error: {"error": "User not found"}
  */
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
+$data = json_decode(file_get_contents('php://input'), true);
 
+// Check API Key
+if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
+    echo json_encode(['error' => 'Invalid API Key']);
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $data['user_id'];
 
-    // Retrieve user data
     $stmt = $pdo->prepare("SELECT total_earnings FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -39,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($user) {
         $totalEarnings = $user['total_earnings'];
 
-        // Retrieve link statistics
         $stmt = $pdo->prepare("SELECT short_url, original_url, created_at, access_count, with_ads FROM links WHERE user_id = ?");
         $stmt->execute([$userId]);
         $links = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($links as $link) {
             $earnings = 0;
             if ($link['with_ads']) {
-                $earnings = $link['access_count'] * earnings_per_click; // earnings_per_click = 0.10
+                $earnings = $link['access_count'] * earnings_per_click;
             }
             $linkData[] = [
                 'short_url' => $link['short_url'],

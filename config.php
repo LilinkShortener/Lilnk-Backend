@@ -7,6 +7,9 @@ define('DB_PASS', '');
 
 define("earnings_per_click", 0.1);
 
+// Define a constant API Key
+define('API_KEY', '123');
+
 // Create a new PDO instance
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
