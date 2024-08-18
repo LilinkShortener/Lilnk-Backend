@@ -25,14 +25,16 @@ include 'config.php';
  *         ...
  *     ]
  * }
- * Error: {"error": "Invalid credentials"}
+ * Error:
+ * - {"error": "Invalid API Key", "code": 2000} - API Key اشتباه است.
+ * - {"error": "Invalid credentials", "code": 2001} - ایمیل یا رمز عبور اشتباه است.
  */
 
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Check API Key
 if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
-    echo json_encode(['error' => 'Invalid API Key']);
+    echo json_encode(['error' => 'Invalid API Key', 'code' => 2000]);
     exit();
 }
 
@@ -53,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode(['success' => true, 'id' => $userId, 'links' => $links]);
     } else {
-        echo json_encode(['error' => 'Invalid credentials']);
+        echo json_encode(['error' => 'Invalid credentials', 'code' => 2001]);
     }
 }
 ?>

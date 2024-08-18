@@ -5,7 +5,7 @@ define('DB_NAME', 'shortener');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-define("earnings_per_click", 0.1);
+define("earnings_per_click", 50);
 
 // Define a constant API Key
 define('API_KEY', '123');

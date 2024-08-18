@@ -14,14 +14,17 @@ include 'config.php';
  * }
  * Response:
  * Success: {"success": true, "short_link": "abcd"}
- * Error: {"error": "Short link already exists"}
+ * Error:
+ * - {"error": "Invalid API Key", "code": 4000} - API Key اشتباه است.
+ * - {"error": "Short link already exists", "code": 4001} - لینک کوتاه شده تکراری است.
+ * - {"error": "Failed to shorten link", "code": 4002} - مشکلی در ایجاد لینک کوتاه شده وجود دارد.
  */
 
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Check API Key
 if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
-    echo json_encode(['error' => 'Invalid API Key']);
+    echo json_encode(['error' => 'Invalid API Key', 'code' => 4000]);
     exit();
 }
 
@@ -35,13 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$shortLink]);
 
     if ($stmt->rowCount() > 0) {
-        echo json_encode(['error' => 'Short link already exists']);
+        echo json_encode(['error' => 'Short link already exists', 'code' => 4001]);
     } else {
-        $stmt = $pdo->prepare("INSERT INTO links (short_url, original_url, user_id, created_at, with_ads) VALUES (?, ?, ?, NOW(), ?)");
+        $stmt = $pdo->prepare("INSERT INTO links (short_url, original_url, user_id, with_ads) VALUES (?, ?, ?, ?)");
         if ($stmt->execute([$shortLink, $originalLink, $userId, $withAds])) {
             echo json_encode(['success' => true, 'short_link' => $shortLink]);
         } else {
-            echo json_encode(['error' => 'Failed to shorten link']);
+            echo json_encode(['error' => 'Failed to shorten link', 'code' => 4002]);
         }
     }
 }
