@@ -2,7 +2,7 @@
 include 'config.php';
 
 /**
- * Retrieve user link statistics or complete user statistics
+ * Retrieve user link statistics, withdrawals statistics, or general statistics
  * Method: POST
  * Request Body for link statistics:
  * {
@@ -16,6 +16,12 @@ include 'config.php';
  *     "api_key": "your_secret_api_key_here",
  *     "user_id": 1,
  *     "action": "withdrawals_stats"
+ * }
+ * 
+ * Request Body for general statistics:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "action": "general_stats"
  * }
  * 
  * Response for link statistics:
@@ -53,11 +59,19 @@ include 'config.php';
  *             "amount": 100.00,
  *             "name": "John",
  *             "surname": "Doe",
- *             "request_time": "2024-08-02 12:00:00"
+ *             "request_time": "2024-08-02 12:00:00",
  *             "status": 1
  *         },
  *         ...
  *     ]
+ * }
+ * 
+ * Response for general statistics:
+ * Success: {
+ *     "total_users": 1000,
+ *     "total_links": 5000,
+ *     "total_clicks": 200000,
+ *     "total_earnings": 1000000
  * }
  * 
  * Error:
@@ -75,17 +89,17 @@ if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = $data['user_id'];
     $action = isset($data['action']) ? $data['action'] : '';
+    
+    if ($action === 'link_stats') {
+        $userId = $data['user_id'];
 
-    // Retrieve user information
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Retrieve user information
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user) {
-        if ($action === 'link_stats') {
-            // Original link statistics functionality
+        if ($user) {
             $stmt = $pdo->prepare("SELECT short_url, original_url, created_at, access_count, with_ads FROM links WHERE user_id = ?");
             $stmt->execute([$userId]);
             $links = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -114,8 +128,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'total_earnings' => $totalEarnings
             ]);
 
-        } elseif ($action === 'withdrawals_stats') {
-            // New functionality: Withdrawals user statistics
+        } else {
+            echo json_encode(['error' => 'User not found', 'code' => 3001]);
+        }
+
+    } elseif ($action === 'withdrawals_stats') {
+        $userId = $data['user_id'];
+
+        // Retrieve user information
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
             $stmt = $pdo->prepare("SELECT COUNT(*) as total_links, SUM(access_count) as total_clicks, 
                                    SUM(CASE WHEN with_ads = 1 THEN 1 ELSE 0 END) as ads_links,
                                    SUM(CASE WHEN with_ads = 0 THEN 1 ELSE 0 END) as no_ads_links,
@@ -142,11 +167,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
         } else {
-            echo json_encode(['error' => 'Invalid action', 'code' => 3002]);
+            echo json_encode(['error' => 'User not found', 'code' => 3001]);
         }
 
+    } elseif ($action === 'general_stats') {
+        // General statistics for the entire service
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total_users FROM users");
+        $stmt->execute();
+        $totalUsers = $stmt->fetch(PDO::FETCH_ASSOC)['total_users'];
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total_links, SUM(access_count) as total_clicks, 
+                               SUM(CASE WHEN with_ads = 1 THEN access_count * ? ELSE 0 END) as total_earnings 
+                               FROM links");
+        $stmt->execute([earnings_per_click]);
+        $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'total_users' => $totalUsers,
+            'total_links' => $stats['total_links'],
+            'total_clicks' => $stats['total_clicks'],
+            'total_earnings' => $stats['total_earnings']
+        ]);
+
     } else {
-        echo json_encode(['error' => 'User not found', 'code' => 3001]);
+        echo json_encode(['error' => 'Invalid action', 'code' => 3002]);
     }
 }
 ?>

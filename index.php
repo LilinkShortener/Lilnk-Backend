@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             echo $output;
 
             // Update earnings for the link
-            $earningsPerClick = 0.2; // Example value
+            $earningsPerClick = earnings_per_click; // Example value
             $stmt = $pdo->prepare("UPDATE links SET earnings = earnings + ? WHERE short_url = ?");
             $stmt->execute([$earningsPerClick, $shortUrl]);
 

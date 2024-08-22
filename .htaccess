@@ -1,6 +1,10 @@
 RewriteEngine On
 
-# Redirect all requests to index.php for processing
+# Skip rewriting for the dashboard directory and its contents
+RewriteCond %{REQUEST_URI} ^/dashboard/ [NC]
+RewriteRule ^ - [L]
+
+# Redirect all other requests to index.php for processing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ index.php?short_url=$1 [L,QSA]
