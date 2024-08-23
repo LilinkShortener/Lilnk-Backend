@@ -1,5 +1,113 @@
 <?php
 include '../config.php';
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+/**
+ * Manage notes operations including creating, editing, deleting, and displaying notes.
+ * Method: POST
+ * 
+ * Request Body for creating a note:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "user_id": 1,
+ *     "action": "create",
+ *     "title": "Note Title",
+ *     "content": "Note content here"
+ * }
+ * 
+ * Request Body for editing a note:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "user_id": 1,
+ *     "action": "edit",
+ *     "id": 1,
+ *     "title": "Updated Title",
+ *     "content": "Updated content here"
+ * }
+ * 
+ * Request Body for deleting a note:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "user_id": 1,
+ *     "action": "delete",
+ *     "id": 1
+ * }
+ * 
+ * Request Body for displaying a note:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "user_id": 1,
+ *     "action": "display",
+ *     "short_url": "abcd1234"
+ * }
+ * 
+ * Request Body for listing all notes for a user:
+ * {
+ *     "api_key": "your_secret_api_key_here",
+ *     "user_id": 1,
+ *     "action": "list"
+ * }
+ * 
+ * Response for creating a note:
+ * Success: {
+ *     "success": true,
+ *     "short_url": "abcd1234"
+ * }
+ * 
+ * Response for editing a note:
+ * Success: {
+ *     "success": true,
+ *     "short_url": "abcd1234"
+ * }
+ * 
+ * Response for deleting a note:
+ * Success: {
+ *     "success": true
+ * }
+ * 
+ * Response for displaying a note:
+ * Success: {
+ *     "id": 1,
+ *     "user_id": 1,
+ *     "title": "Note Title",
+ *     "content": "Note content here",
+ *     "short_url": "abcd1234",
+ *     "created_at": "2024-08-01 12:00:00",
+ *     "updated_at": "2024-08-02 12:00:00",
+ *     "access_count": 10,
+ *     "last_accessed": "2024-08-03 12:00:00",
+ *     "email": "user@example.com"
+ * }
+ * 
+ * Response for listing notes:
+ * Success: {
+ *     "success": true,
+ *     "notes": [
+ *         {
+ *             "id": 1,
+ *             "title": "First Note",
+ *             "content": "First note content",
+ *             "short_url": "abcd1234",
+ *             "created_at": "2024-08-01 12:00:00"
+ *         },
+ *         ...
+ *     ]
+ * }
+ * 
+ * Error:
+ * - {"error": "Invalid API Key", "code": 9000} - API Key اشتباه است.
+ * - {"error": "Failed to create note", "code": 9001} - ایجاد نوت با خطا مواجه شد.
+ * - {"error": "Failed to update note", "code": 9002} - ویرایش نوت با خطا مواجه شد.
+ * - {"error": "Failed to delete note", "code": 9003} - حذف نوت با خطا مواجه شد.
+ * - {"error": "Invalid short URL", "code": 9004} - آدرس کوتاه نوت نادرست است.
+ * - {"error": "Note not found", "code": 9005} - نوت پیدا نشد.
+ * - {"error": "No notes found for this user", "code": 9006} - نوتی برای این کاربر پیدا نشد.
+ * - {"error": "Invalid action", "code": 9007} - اکشن نادرست است.
+ */
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -8,9 +116,8 @@ if (!isset($data['api_key']) || $data['api_key'] !== API_KEY) {
     echo json_encode(['error' => 'Invalid API Key', 'code' => 9000]);
     exit();
 }
-
-// انتخاب عملیات بر اساس action
-$action = $data['action'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = isset($data['action']) ? $data['action'] : '';
 
 switch ($action) {
     // ایجاد نوت
@@ -100,5 +207,5 @@ switch ($action) {
     default:
         echo json_encode(['error' => 'Invalid action', 'code' => 9007]);
 }
-
+}
 ?>
